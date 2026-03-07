@@ -1,0 +1,29 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.gradle/
+build/
+coverage/
+*.iml
+*.log
+local.properties
+
+# Local backend configuration
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Android release signing material and exported packages
+**/key.properties
+**/*.jks
+**/*.keystore
+*.apk
+*.aab
