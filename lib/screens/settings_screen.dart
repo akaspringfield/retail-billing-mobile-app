@@ -29,9 +29,11 @@ class SettingsScreen extends StatelessWidget {
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(item.$2),
-                  title: Text(item.$1, style: const TextStyle(fontWeight: FontWeight.w900)),
+                  title: Text(item.$1,
+                      style: const TextStyle(fontWeight: FontWeight.w900)),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).pushReplacementNamed(item.$3),
+                  onTap: () =>
+                      Navigator.of(context).pushReplacementNamed(item.$3),
                 ),
               ),
             );

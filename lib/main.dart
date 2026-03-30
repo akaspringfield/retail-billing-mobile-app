@@ -8,6 +8,7 @@ import 'dashboard_service.dart';
 import 'env.dart';
 import 'people_service.dart';
 import 'rbac_service.dart';
+import 'sales_service.dart';
 import 'screens/account_screen.dart';
 import 'screens/catalog_screens.dart';
 import 'screens/dashboard_screen.dart';
@@ -15,9 +16,12 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/people_screen.dart';
 import 'screens/pos_screen.dart';
+import 'screens/products_screen.dart';
 import 'screens/rbac_screens.dart';
 import 'screens/settings_screen.dart';
 import 'screens/signup_screen.dart';
+import 'screens/sales_screen.dart';
+import 'screens/stores_screen.dart';
 import 'theme.dart';
 
 Future<void> main() async {
@@ -31,6 +35,7 @@ Future<void> main() async {
     people: PeopleService(api),
     catalog: CatalogService(api),
     rbac: RbacService(api),
+    sales: SalesService(api),
   ));
 }
 
@@ -43,6 +48,7 @@ class RetailBillingMobile extends StatelessWidget {
     required this.people,
     required this.catalog,
     required this.rbac,
+    required this.sales,
   });
 
   final AuthService auth;
@@ -51,6 +57,7 @@ class RetailBillingMobile extends StatelessWidget {
   final PeopleService people;
   final CatalogService catalog;
   final RbacService rbac;
+  final SalesService sales;
 
   @override
   Widget build(BuildContext context) {
@@ -65,18 +72,28 @@ class RetailBillingMobile extends StatelessWidget {
         '/forgot-password': (_) => ForgotPasswordScreen(auth: auth),
         '/dashboard': (_) => DashboardScreen(service: dashboard),
         '/pos': (_) => PosScreen(service: billing),
+        '/sales': (_) => SalesScreen(service: sales),
         '/account': (_) => AccountScreen(auth: auth),
-        '/customers': (_) => PeopleScreen(service: people, kind: PeopleKind.customers),
-        '/suppliers': (_) => PeopleScreen(service: people, kind: PeopleKind.suppliers),
+        '/customers': (_) =>
+            PeopleScreen(service: people, kind: PeopleKind.customers),
+        '/suppliers': (_) =>
+            PeopleScreen(service: people, kind: PeopleKind.suppliers),
         '/users': (_) => PeopleScreen(service: people, kind: PeopleKind.users),
-        '/products': (_) => CatalogScreen(service: catalog, kind: CatalogKind.products),
-        '/stock-balances': (_) => CatalogScreen(service: catalog, kind: CatalogKind.stockBalances),
-        '/inventory-ledger': (_) => CatalogScreen(service: catalog, kind: CatalogKind.inventoryLedger),
+        '/stores': (_) => StoresScreen(service: people),
+        '/products': (_) => ProductsScreen(service: catalog),
+        '/stock-balances': (_) =>
+            CatalogScreen(service: catalog, kind: CatalogKind.stockBalances),
+        '/inventory-ledger': (_) =>
+            CatalogScreen(service: catalog, kind: CatalogKind.inventoryLedger),
         '/settings': (_) => const SettingsScreen(),
-        '/roles': (_) => RbacScreen(service: rbac, people: people, kind: RbacKind.roles),
-        '/permissions': (_) => RbacScreen(service: rbac, people: people, kind: RbacKind.permissions),
-        '/role-permissions': (_) => RbacScreen(service: rbac, people: people, kind: RbacKind.rolePermissions),
-        '/user-roles': (_) => RbacScreen(service: rbac, people: people, kind: RbacKind.userRoles),
+        '/roles': (_) =>
+            RbacScreen(service: rbac, people: people, kind: RbacKind.roles),
+        '/permissions': (_) => RbacScreen(
+            service: rbac, people: people, kind: RbacKind.permissions),
+        '/role-permissions': (_) => RbacScreen(
+            service: rbac, people: people, kind: RbacKind.rolePermissions),
+        '/user-roles': (_) =>
+            RbacScreen(service: rbac, people: people, kind: RbacKind.userRoles),
       },
     );
   }

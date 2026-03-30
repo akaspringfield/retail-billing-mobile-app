@@ -43,12 +43,38 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
   void reload() => setState(() => future = load());
 
-  Future<void> openCreate() async {
+  Future<void> openForm([Map<String, dynamic>? record]) async {
+    Map<String, dynamic>? detail = record;
+    if (record != null && widget.kind != PeopleKind.users) {
+      final id = record['id'] is num ? (record['id'] as num).toInt() : null;
+      if (id != null) {
+        try {
+          detail = widget.kind == PeopleKind.customers
+              ? await widget.service.customer(id)
+              : await widget.service.supplier(id);
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('$error')));
+          }
+          return;
+        }
+      }
+    }
+    if (!mounted) return;
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) =>
-          _CreatePersonSheet(kind: widget.kind, service: widget.service),
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      ),
+      builder: (_) => _CreatePersonSheet(
+        kind: widget.kind,
+        service: widget.service,
+        record: detail,
+      ),
     );
     if (saved == true) reload();
   }
@@ -60,7 +86,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       route: route,
       actions: [
         IconButton(onPressed: reload, icon: const Icon(Icons.refresh)),
-        IconButton(onPressed: openCreate, icon: const Icon(Icons.add)),
+        IconButton(onPressed: () => openForm(), icon: const Icon(Icons.add)),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,32 +142,39 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: InfoCard(
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: AppColors.page,
-              foregroundColor: AppColors.primary,
-              child: Text(primary.isEmpty ? '?' : primary[0].toUpperCase()),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(primary,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w900, color: AppColors.ink)),
-                  const SizedBox(height: 3),
-                  Text(secondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: widget.kind == PeopleKind.users ? null : () => openForm(record),
+        child: InfoCard(
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: AppColors.page,
+                foregroundColor: AppColors.primary,
+                child: Text(primary.isEmpty ? '?' : primary[0].toUpperCase()),
               ),
-            ),
-            if (status.isNotEmpty)
-              Text(status,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, color: AppColors.muted)),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(primary,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w900, color: AppColors.ink)),
+                    const SizedBox(height: 3),
+                    Text(secondary,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+              if (status.isNotEmpty)
+                Text(status,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, color: AppColors.muted)),
+              if (widget.kind != PeopleKind.users)
+                const Icon(Icons.chevron_right, color: AppColors.muted),
+            ],
+          ),
         ),
       ),
     );
@@ -149,13 +182,32 @@ class _PeopleScreenState extends State<PeopleScreen> {
 }
 
 class _CreatePersonSheet extends StatefulWidget {
-  const _CreatePersonSheet({required this.kind, required this.service});
+  const _CreatePersonSheet({
+    required this.kind,
+    required this.service,
+    this.record,
+  });
 
   final PeopleKind kind;
   final PeopleService service;
+  final Map<String, dynamic>? record;
 
   @override
   State<_CreatePersonSheet> createState() => _CreatePersonSheetState();
+}
+
+class _PeopleLookups {
+  const _PeopleLookups(
+    this.stores,
+    this.countries,
+    this.states,
+    this.cities,
+  );
+
+  final List<Map<String, dynamic>> stores;
+  final List<Map<String, dynamic>> countries;
+  final List<Map<String, dynamic>> states;
+  final List<Map<String, dynamic>> cities;
 }
 
 class _CreatePersonSheetState extends State<_CreatePersonSheet> {
@@ -180,8 +232,11 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
   final remarks = TextEditingController();
   final employeeCode = TextEditingController();
 
-  late final Future<List<Map<String, dynamic>>> storesFuture;
+  late final Future<_PeopleLookups> lookupsFuture;
   int? storeId;
+  int? countryId;
+  int? stateId;
+  int? cityId;
   String customerType = 'INDIVIDUAL';
   String customerStatus = 'ACTIVE';
   String storeAccessType = 'PARTICULAR';
@@ -199,12 +254,48 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
   @override
   void initState() {
     super.initState();
-    storesFuture = widget.service.stores();
+    final record = widget.record ?? const <String, dynamic>{};
+    name.text = textValue(record, ['name'], fallback: '');
+    email.text = textValue(record, ['email'], fallback: '');
+    phone.text = textValue(record, ['phone', 'mobile_number'], fallback: '');
+    alternatePhone.text = textValue(record, ['alternate_phone'], fallback: '');
+    contactPerson.text = textValue(record, ['contact_person'], fallback: '');
+    gstNumber.text = textValue(record, ['gst_number'], fallback: '');
+    panNumber.text = textValue(record, ['pan_number'], fallback: '');
+    postalCode.text = textValue(record, ['postal_code'], fallback: '');
+    address.text = textValue(record, ['address'], fallback: '');
+    creditLimit.text = textValue(record, ['credit_limit'], fallback: '0.00');
+    openingBalance.text =
+        textValue(record, ['opening_balance'], fallback: '0.00');
+    paymentTerms.text = textValue(record, ['payment_terms'], fallback: '0');
+    remarks.text = textValue(record, ['remarks'], fallback: '');
+    customerType = textValue(record, ['customer_type'], fallback: 'INDIVIDUAL');
+    customerStatus = textValue(record, ['status'], fallback: 'ACTIVE');
+    isActive = record['is_active'] ?? true;
+    countryId = _id(record['country']);
+    stateId = _id(record['state']);
+    cityId = _id(record['city']);
+    lookupsFuture = _loadLookups();
   }
 
+  Future<_PeopleLookups> _loadLookups() async {
+    final results = await Future.wait([
+      widget.service.stores(),
+      widget.service.masterRecords('countries'),
+      widget.service.masterRecords('states'),
+      widget.service.masterRecords('cities'),
+    ]);
+    return _PeopleLookups(results[0], results[1], results[2], results[3]);
+  }
+
+  int? _id(Object? value) =>
+      value is num ? value.toInt() : int.tryParse('$value');
+
   String get title => switch (widget.kind) {
-        PeopleKind.customers => 'Add Customer',
-        PeopleKind.suppliers => 'Add Supplier',
+        PeopleKind.customers =>
+          widget.record == null ? 'Add Customer' : 'Edit Customer',
+        PeopleKind.suppliers =>
+          widget.record == null ? 'Add Supplier' : 'Edit Supplier',
         PeopleKind.users => 'Add User',
       };
 
@@ -212,7 +303,8 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
       ? null
       : '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
-  Future<void> save(List<Map<String, dynamic>> stores) async {
+  Future<void> save(_PeopleLookups lookups) async {
+    final stores = lookups.stores;
     Map<String, dynamic>? selectedStore;
     for (final store in stores) {
       if (store['id'] == storeId) selectedStore = store;
@@ -225,6 +317,14 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
     }
     if (widget.kind != PeopleKind.users && name.text.trim().isEmpty) {
       setState(() => error = 'Name is required.');
+      return;
+    }
+    if (widget.kind == PeopleKind.suppliers &&
+        (countryId == null ||
+            stateId == null ||
+            cityId == null ||
+            address.text.trim().isEmpty)) {
+      setState(() => error = 'Country, state, city, and address are required.');
       return;
     }
     if (widget.kind == PeopleKind.users) {
@@ -254,26 +354,35 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
     });
     try {
       if (widget.kind == PeopleKind.customers) {
-        await widget.service.createCustomer({
+        final payload = <String, dynamic>{
           'organization': organizationId,
           'name': name.text.trim(),
           'customer_type': customerType,
           'status': customerStatus,
           'phone': phone.text.trim(),
-          'alternate_phone': '',
+          'alternate_phone': alternatePhone.text.trim(),
           'email': email.text.trim().toLowerCase(),
           'gst_number': gstNumber.text.replaceAll(' ', '').toUpperCase(),
           'pan_number': panNumber.text.replaceAll(' ', '').toUpperCase(),
-          'postal_code': '',
+          'country': countryId,
+          'state': stateId,
+          'city': cityId,
+          'postal_code': postalCode.text.trim(),
           'address': address.text.trim(),
           'credit_limit': creditLimit.text.trim(),
-          'opening_balance': '0.00',
-          'payment_terms': 0,
-          'remarks': '',
-          'is_active': true,
-        });
+          'opening_balance': openingBalance.text.trim(),
+          'payment_terms': int.tryParse(paymentTerms.text.trim()) ?? 0,
+          'remarks': remarks.text.trim(),
+          'is_active': isActive,
+        };
+        final id = _id(widget.record?['id']);
+        if (id == null) {
+          await widget.service.createCustomer(payload);
+        } else {
+          await widget.service.updateCustomer(id, payload);
+        }
       } else if (widget.kind == PeopleKind.suppliers) {
-        await widget.service.createSupplier({
+        final payload = <String, dynamic>{
           'organization': organizationId,
           'name': name.text.trim(),
           'contact_person': contactPerson.text.trim(),
@@ -282,6 +391,9 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
           'email': email.text.trim().toLowerCase(),
           'gst_number': gstNumber.text.replaceAll(' ', '').toUpperCase(),
           'pan_number': panNumber.text.replaceAll(' ', '').toUpperCase(),
+          'country': countryId,
+          'state': stateId,
+          'city': cityId,
           'postal_code': postalCode.text.trim(),
           'address': address.text.trim(),
           'credit_limit': creditLimit.text.trim(),
@@ -289,7 +401,13 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
           'payment_terms': int.tryParse(paymentTerms.text.trim()) ?? 0,
           'remarks': remarks.text.trim(),
           'is_active': isActive,
-        });
+        };
+        final id = _id(widget.record?['id']);
+        if (id == null) {
+          await widget.service.createSupplier(payload);
+        } else {
+          await widget.service.updateSupplier(id, payload);
+        }
       } else {
         final display = displayName.text.trim().isNotEmpty
             ? displayName.text.trim()
@@ -333,10 +451,11 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: storesFuture,
+    return FutureBuilder<_PeopleLookups>(
+      future: lookupsFuture,
       builder: (context, snapshot) {
-        final stores = snapshot.data ?? const <Map<String, dynamic>>[];
+        final lookups = snapshot.data;
+        final stores = lookups?.stores ?? const <Map<String, dynamic>>[];
         storeId ??= stores.isEmpty ? null : stores.first['id'] as int?;
         return SafeArea(
           child: SingleChildScrollView(
@@ -357,7 +476,7 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
                   if (widget.kind == PeopleKind.users)
                     ..._userFields(stores)
                   else if (widget.kind == PeopleKind.suppliers)
-                    ..._supplierFields()
+                    ..._supplierFields(lookups!)
                   else
                     ..._customerFields(),
                   if (error.isNotEmpty) ...[
@@ -367,9 +486,19 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
                   ],
                   const SizedBox(height: 14),
                   FilledButton(
-                    onPressed: saving ? null : () => save(stores),
+                    onPressed: saving ? null : () => save(lookups!),
                     child: Text(saving ? 'Saving...' : 'Save'),
                   ),
+                  if (widget.record != null && widget.kind != PeopleKind.users)
+                    TextButton.icon(
+                      onPressed: saving ? null : delete,
+                      icon: const Icon(Icons.delete_outline,
+                          color: AppColors.danger),
+                      label: const Text(
+                        'Delete',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
+                    ),
                 ],
               ],
             ),
@@ -377,6 +506,40 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
         );
       },
     );
+  }
+
+  Future<void> delete() async {
+    final id = _id(widget.record?['id']);
+    if (id == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+            'Delete ${widget.kind == PeopleKind.customers ? 'customer' : 'supplier'}'),
+        content: Text('Delete ${name.text}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      if (widget.kind == PeopleKind.customers) {
+        await widget.service.deleteCustomer(id);
+      } else {
+        await widget.service.deleteSupplier(id);
+      }
+      if (mounted) Navigator.pop(context, true);
+    } catch (exception) {
+      if (mounted) setState(() => error = '$exception');
+    }
   }
 
   List<Widget> _customerFields() => [
@@ -404,29 +567,67 @@ class _CreatePersonSheetState extends State<_CreatePersonSheet> {
         _field(address, 'Address', lines: 3),
       ];
 
-  List<Widget> _supplierFields() => [
-        _field(name, 'Name'),
-        _field(contactPerson, 'Contact Person'),
-        _field(phone, 'Phone', type: TextInputType.phone),
-        _field(alternatePhone, 'Alternate Phone', type: TextInputType.phone),
-        _field(email, 'Email', type: TextInputType.emailAddress),
-        _field(gstNumber, 'GST Number', caps: TextCapitalization.characters),
-        _field(panNumber, 'PAN Number', caps: TextCapitalization.characters),
-        _field(creditLimit, 'Credit Limit',
-            type: const TextInputType.numberWithOptions(decimal: true)),
-        _field(openingBalance, 'Opening Balance',
-            type: const TextInputType.numberWithOptions(decimal: true)),
-        _field(paymentTerms, 'Payment Terms (days)',
-            type: TextInputType.number),
-        _field(postalCode, 'Postal Code'),
-        _dropdown(
-            'Status',
-            isActive ? 'ACTIVE' : 'INACTIVE',
-            const {'ACTIVE': 'Active', 'INACTIVE': 'Inactive'},
-            (value) => isActive = value == 'ACTIVE'),
-        _field(address, 'Address', lines: 3),
-        _field(remarks, 'Remarks', lines: 3),
-      ];
+  List<Widget> _supplierFields(_PeopleLookups lookups) {
+    final states = lookups.states
+        .where((item) => countryId == null || _id(item['country']) == countryId)
+        .toList();
+    final cities = lookups.cities
+        .where((item) => stateId == null || _id(item['state']) == stateId)
+        .toList();
+    return [
+      _field(name, 'Name'),
+      _field(contactPerson, 'Contact Person'),
+      _field(phone, 'Phone', type: TextInputType.phone),
+      _field(alternatePhone, 'Alternate Phone', type: TextInputType.phone),
+      _field(email, 'Email', type: TextInputType.emailAddress),
+      _field(gstNumber, 'GST Number', caps: TextCapitalization.characters),
+      _field(panNumber, 'PAN Number', caps: TextCapitalization.characters),
+      _locationDropdown('Country', countryId, lookups.countries, (value) {
+        countryId = value;
+        stateId = null;
+        cityId = null;
+      }),
+      _locationDropdown('State', stateId, states, (value) {
+        stateId = value;
+        cityId = null;
+      }),
+      _locationDropdown('City', cityId, cities, (value) => cityId = value),
+      _field(creditLimit, 'Credit Limit',
+          type: const TextInputType.numberWithOptions(decimal: true)),
+      _field(openingBalance, 'Opening Balance',
+          type: const TextInputType.numberWithOptions(decimal: true)),
+      _field(paymentTerms, 'Payment Terms (days)', type: TextInputType.number),
+      _field(postalCode, 'Postal Code'),
+      _dropdown(
+          'Status',
+          isActive ? 'ACTIVE' : 'INACTIVE',
+          const {'ACTIVE': 'Active', 'INACTIVE': 'Inactive'},
+          (value) => isActive = value == 'ACTIVE'),
+      _field(address, 'Address', lines: 3),
+      _field(remarks, 'Remarks', lines: 3),
+    ];
+  }
+
+  Widget _locationDropdown(
+    String label,
+    int? value,
+    List<Map<String, dynamic>> records,
+    ValueChanged<int?> changed,
+  ) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: DropdownButtonFormField<int>(
+          initialValue: value,
+          decoration: InputDecoration(labelText: label),
+          items: records
+              .map((item) => DropdownMenuItem<int>(
+                    value: _id(item['id']),
+                    child: Text(textValue(item, ['display_name', 'name'])),
+                  ))
+              .toList(),
+          onChanged: (next) => setState(() => changed(next)),
+        ),
+      );
 
   List<Widget> _userFields(List<Map<String, dynamic>> stores) => [
         _field(email, 'Email', type: TextInputType.emailAddress),

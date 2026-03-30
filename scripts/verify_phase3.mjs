@@ -27,6 +27,9 @@ const requiredEndpoints = [
   '/v1/products/',
   '/v1/stocks/',
   '/inventory/transactions/',
+  '/inventory/adjustment-requests/',
+  '/approve/',
+  '/reject/',
   '/rbac/roles/',
   '/rbac/permission-groups/',
   '/rbac/permissions/',
@@ -43,11 +46,25 @@ const source = requiredFiles.map((file) => readFileSync(join(root, file), 'utf8'
 const missingRoutes = requiredRoutes.filter((route) => !source.includes(route));
 const missingEndpoints = requiredEndpoints.filter((endpoint) => !source.includes(endpoint));
 
-if (missingRoutes.length || missingEndpoints.length) {
+const stockFields = [
+  "'organization'",
+  "'store'",
+  "'product'",
+  "'direction'",
+  "'quantity'",
+  "'unit_cost'",
+  "'reason'",
+  "'reference_number'",
+  "'remarks'",
+];
+const missingStockFields = stockFields.filter((field) => !source.includes(field));
+
+if (missingRoutes.length || missingEndpoints.length || missingStockFields.length) {
   if (missingRoutes.length) console.error(`Missing routes:\n${missingRoutes.join('\n')}`);
   if (missingEndpoints.length) console.error(`Missing endpoints:\n${missingEndpoints.join('\n')}`);
+  if (missingStockFields.length) console.error(`Missing stock fields:\n${missingStockFields.join('\n')}`);
   process.exit(1);
 }
 
 console.log('Phase 3 catalog, stock, and settings verification passed.');
-console.log(`Checked ${requiredFiles.length} files, ${requiredRoutes.length} routes, and ${requiredEndpoints.length} backend endpoints.`);
+console.log(`Checked ${requiredFiles.length} files, ${requiredRoutes.length} routes, ${requiredEndpoints.length} backend endpoints, and ${stockFields.length} stock fields.`);

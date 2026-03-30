@@ -79,6 +79,11 @@ class AppShell extends StatelessWidget {
                         label: 'POS'),
                     _NavTile(
                         route: route,
+                        target: '/sales',
+                        icon: Icons.receipt_long_outlined,
+                        label: 'Sales History'),
+                    _NavTile(
+                        route: route,
                         target: '/account',
                         icon: Icons.person_outline,
                         label: 'My Account'),
@@ -97,6 +102,11 @@ class AppShell extends StatelessWidget {
                         target: '/users',
                         icon: Icons.manage_accounts_outlined,
                         label: 'Users'),
+                    _NavTile(
+                        route: route,
+                        target: '/stores',
+                        icon: Icons.storefront_outlined,
+                        label: 'Stores'),
                     const Divider(height: 1),
                     _NavTile(
                         route: route,

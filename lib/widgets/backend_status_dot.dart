@@ -35,8 +35,11 @@ class _BackendStatusDotState extends State<BackendStatusDot> {
   Future<void> check() async {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 3);
     try {
-      final request = await client.getUrl(Uri.parse(AppEnv.apiBaseUrl)).timeout(const Duration(seconds: 3));
-      final response = await request.close().timeout(const Duration(seconds: 3));
+      final request = await client
+          .getUrl(Uri.parse(AppEnv.apiBaseUrl))
+          .timeout(const Duration(seconds: 3));
+      final response =
+          await request.close().timeout(const Duration(seconds: 3));
       await response.drain<void>();
       if (mounted) setState(() => connected = true);
     } catch (_) {
@@ -77,14 +80,22 @@ class _BackendStatusDotState extends State<BackendStatusDot> {
                   color: color,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 1.5),
-                  boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.35), blurRadius: 8)
+                  ],
                 ),
               ),
               if (widget.showLabel) ...[
                 const SizedBox(width: 7),
                 Text(
-                  isConnected ? 'Connected' : connected == null ? 'Checking' : 'Offline',
-                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w900),
+                  isConnected
+                      ? 'Connected'
+                      : connected == null
+                          ? 'Checking'
+                          : 'Offline',
+                  style: TextStyle(
+                      color: color, fontSize: 12, fontWeight: FontWeight.w900),
                 ),
               ],
             ],

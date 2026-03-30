@@ -55,7 +55,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> reset() async {
-    if ([email, otp, password, confirmPassword].any((c) => c.text.trim().isEmpty)) {
+    if ([email, otp, password, confirmPassword]
+        .any((c) => c.text.trim().isEmpty)) {
       setState(() => error = 'Email, OTP, and new password are required.');
       return;
     }
@@ -94,9 +95,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Forgot Password', style: Theme.of(context).textTheme.titleLarge),
+              Text('Forgot Password',
+                  style: Theme.of(context).textTheme.titleLarge),
               TextButton(
-                onPressed: loading ? null : () => Navigator.of(context).pushReplacementNamed('/login'),
+                onPressed: loading
+                    ? null
+                    : () =>
+                        Navigator.of(context).pushReplacementNamed('/login'),
                 child: const Text('Login'),
               ),
             ],
@@ -128,7 +133,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 controller: password,
                 obscureText: true,
                 enabled: !loading,
-                decoration: const InputDecoration(hintText: 'Enter new password'),
+                decoration:
+                    const InputDecoration(hintText: 'Enter new password'),
               ),
             ),
             FieldLabel(
@@ -137,13 +143,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 controller: confirmPassword,
                 obscureText: true,
                 enabled: !loading,
-                decoration: const InputDecoration(hintText: 'Confirm new password'),
+                decoration:
+                    const InputDecoration(hintText: 'Confirm new password'),
               ),
             ),
           ],
           FilledButton(
             onPressed: loading ? null : (otpSent ? reset : requestOtp),
-            child: Text(loading ? 'Please wait...' : otpSent ? 'Reset Password' : 'Send OTP'),
+            child: Text(loading
+                ? 'Please wait...'
+                : otpSent
+                    ? 'Reset Password'
+                    : 'Send OTP'),
           ),
         ],
       ),

@@ -31,7 +31,8 @@ class RbacService {
     return _dataList(await _api.get('/rbac/roles/$roleUuid/permissions/'));
   }
 
-  Future<void> assignRolePermission(String roleUuid, String permissionUuid) async {
+  Future<void> assignRolePermission(
+      String roleUuid, String permissionUuid) async {
     await _api.post(
       '/rbac/roles/$roleUuid/permissions/',
       {'permission_uuid': permissionUuid},
@@ -39,7 +40,8 @@ class RbacService {
     );
   }
 
-  Future<void> removeRolePermission(String roleUuid, String permissionUuid) async {
+  Future<void> removeRolePermission(
+      String roleUuid, String permissionUuid) async {
     await _api.delete('/rbac/roles/$roleUuid/permissions/$permissionUuid/');
   }
 
@@ -52,12 +54,15 @@ class RbacService {
     required int role,
     int? store,
   }) async {
-    await _api.post('/rbac/user-roles/assign/', {
-      'user': user,
-      'role': role,
-      'store': store,
-      'is_active': true,
-    }, authorized: true);
+    await _api.post(
+        '/rbac/user-roles/assign/',
+        {
+          'user': user,
+          'role': role,
+          'store': store,
+          'is_active': true,
+        },
+        authorized: true);
   }
 
   Future<void> deleteUserRole(String uuid) async {

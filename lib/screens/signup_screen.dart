@@ -60,7 +60,8 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() => error = 'Complete all required fields.');
       return;
     }
-    if (controllers['password']!.text != controllers['confirm_password']!.text) {
+    if (controllers['password']!.text !=
+        controllers['confirm_password']!.text) {
       setState(() => error = 'Passwords do not match.');
       return;
     }
@@ -72,8 +73,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
     try {
       await widget.auth.register({
-        for (final entry in controllers.entries) entry.key: entry.value.text.trim(),
-        'store_name': value('store_name').isEmpty ? 'Head Office' : value('store_name'),
+        for (final entry in controllers.entries)
+          entry.key: entry.value.text.trim(),
+        'store_name':
+            value('store_name').isEmpty ? 'Head Office' : value('store_name'),
       });
       if (mounted) Navigator.of(context).pushReplacementNamed('/dashboard');
     } catch (err) {
@@ -96,7 +99,10 @@ class _SignupScreenState extends State<SignupScreen> {
             children: [
               Text('Sign Up', style: Theme.of(context).textTheme.titleLarge),
               TextButton(
-                onPressed: loading ? null : () => Navigator.of(context).pushReplacementNamed('/login'),
+                onPressed: loading
+                    ? null
+                    : () =>
+                        Navigator.of(context).pushReplacementNamed('/login'),
                 child: const Text('Login'),
               ),
             ],
@@ -107,8 +113,10 @@ class _SignupScreenState extends State<SignupScreen> {
             title: 'Business',
             children: [
               _field('Business Name', 'organization_name'),
-              _field('Business Email', 'organization_email', keyboard: TextInputType.emailAddress),
-              _field('Phone', 'organization_phone', keyboard: TextInputType.phone),
+              _field('Business Email', 'organization_email',
+                  keyboard: TextInputType.emailAddress),
+              _field('Phone', 'organization_phone',
+                  keyboard: TextInputType.phone),
               _field('Address', 'address'),
               _field('City', 'city'),
               _field('State', 'state'),
@@ -117,13 +125,15 @@ class _SignupScreenState extends State<SignupScreen> {
               _field('Tax Registration', 'tax_registration_number'),
             ],
           ),
-          _Section(title: 'Store', children: [_field('Store Name', 'store_name')]),
+          _Section(
+              title: 'Store', children: [_field('Store Name', 'store_name')]),
           _Section(
             title: 'Admin User',
             children: [
               _field('First Name', 'first_name'),
               _field('Last Name', 'last_name'),
-              _field('Login Email', 'email', keyboard: TextInputType.emailAddress),
+              _field('Login Email', 'email',
+                  keyboard: TextInputType.emailAddress),
               _field('Password', 'password', secret: true),
               _field('Confirm Password', 'confirm_password', secret: true),
             ],
@@ -153,8 +163,12 @@ class _SignupScreenState extends State<SignupScreen> {
         decoration: InputDecoration(
           suffixIcon: secret
               ? IconButton(
-                  onPressed: loading ? null : () => setState(() => showPassword = !showPassword),
-                  icon: Icon(showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                  onPressed: loading
+                      ? null
+                      : () => setState(() => showPassword = !showPassword),
+                  icon: Icon(showPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined),
                 )
               : null,
         ),
@@ -176,7 +190,9 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
           const SizedBox(height: 12),
           ...children,
         ],

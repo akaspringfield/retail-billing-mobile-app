@@ -1,6 +1,9 @@
 List<Map<String, dynamic>> readList(Object? payload) {
   if (payload is List) {
-    return payload.whereType<Map>().map((item) => item.cast<String, dynamic>()).toList();
+    return payload
+        .whereType<Map>()
+        .map((item) => item.cast<String, dynamic>())
+        .toList();
   }
   if (payload is Map) {
     final data = payload.cast<String, dynamic>();
@@ -23,10 +26,12 @@ Map<String, dynamic> readMap(Object? payload) {
   return {};
 }
 
-String textValue(Map<String, dynamic> record, List<String> keys, {String fallback = '-'}) {
+String textValue(Map<String, dynamic> record, List<String> keys,
+    {String fallback = '-'}) {
   for (final key in keys) {
     final value = record[key];
-    if (value != null && value.toString().trim().isNotEmpty) return value.toString();
+    if (value != null && value.toString().trim().isNotEmpty)
+      return value.toString();
   }
   return fallback;
 }

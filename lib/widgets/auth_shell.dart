@@ -41,7 +41,8 @@ class AuthShell extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+                      borderRadius:
+                          BorderRadius.vertical(bottom: Radius.circular(24)),
                       boxShadow: [
                         BoxShadow(
                           blurRadius: 30,
@@ -172,7 +173,8 @@ class FormMessage extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: success ? const Color(0xFFEDF7EF) : const Color(0xFFFFF1F1),
-        border: Border.all(color: success ? const Color(0xFFB9DCC5) : const Color(0xFFF0C3C3)),
+        border: Border.all(
+            color: success ? const Color(0xFFB9DCC5) : const Color(0xFFF0C3C3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

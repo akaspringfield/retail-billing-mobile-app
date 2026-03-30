@@ -70,11 +70,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const BackendStatusDot(showLabel: true),
                   const SizedBox(width: 10),
-                  Text('Sign in', style: Theme.of(context).textTheme.titleLarge),
+                  Text('Sign in',
+                      style: Theme.of(context).textTheme.titleLarge),
                 ],
               ),
               TextButton(
-                onPressed: loading ? null : () => Navigator.of(context).pushReplacementNamed('/signup'),
+                onPressed: loading
+                    ? null
+                    : () =>
+                        Navigator.of(context).pushReplacementNamed('/signup'),
                 child: const Text('Sign Up'),
               ),
             ],
@@ -104,8 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 hintText: 'Enter password',
                 suffixIcon: IconButton(
-                  onPressed: loading ? null : () => setState(() => showPassword = !showPassword),
-                  icon: Icon(showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                  onPressed: loading
+                      ? null
+                      : () => setState(() => showPassword = !showPassword),
+                  icon: Icon(showPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined),
                 ),
               ),
             ),
@@ -114,11 +122,16 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Checkbox(
                 value: rememberEmail,
-                onChanged: loading ? null : (value) => setState(() => rememberEmail = value ?? false),
+                onChanged: loading
+                    ? null
+                    : (value) => setState(() => rememberEmail = value ?? false),
               ),
               const Expanded(child: Text('Remember email')),
               TextButton(
-                onPressed: loading ? null : () => Navigator.of(context).pushReplacementNamed('/forgot-password'),
+                onPressed: loading
+                    ? null
+                    : () => Navigator.of(context)
+                        .pushReplacementNamed('/forgot-password'),
                 child: const Text('Forgot?'),
               ),
             ],
